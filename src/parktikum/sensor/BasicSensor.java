@@ -1,16 +1,22 @@
 package parktikum.sensor;
 
+import parktikum.functions.BasicFunction;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Created by sicher on 05.04.2017.
+ */
 public class BasicSensor implements Runnable{
-	public final static int MIN_WAIT = 500;
-	public final static int MAX_WAIT = 5000;
+	public final static int MIN_WAIT = 10;
+	public final static int MAX_WAIT = 50;
 	public final static int MIN_WERT = 1000;
 	public final static int MAX_WERT = 5000;
 
@@ -27,18 +33,18 @@ public class BasicSensor implements Runnable{
 		if(args.length == 3){
 			new Thread(new BasicSensor(args[0], args[1], Integer.parseInt(args[2]))).start();
 		}else{
-			new Thread(new BasicSensor("Bier", "localhost", 4711)).start();
+			new Thread(new BasicSensor("Bier", "127.0.0.1", 47111)).start();
 		}
 	}
 	
 	public BasicSensor(String inhalt, String ip, int port) throws SocketException, UnknownHostException {
 		rand = new Random();
 		this.inhalt = inhalt;
-		this.nummer = 0;
+		this.nummer = 1;//starte bei 1 sonst macht der log fehler mit INT_MIN+1
 		this.wert = rand.nextInt(MAX_WERT-MIN_WERT) + MIN_WERT;
 		this.ip = ip;
 		this.port = port;
-		socket = new DatagramSocket(port, InetAddress.getByName(ip));
+		socket = new DatagramSocket();
 		send();
 	}
 	
@@ -71,7 +77,7 @@ public class BasicSensor implements Runnable{
 		try {
 			String send = inhalt + " " + nummer + " " + wert;
 			System.out.println("send " + send);
-			byte[] data = send.getBytes();
+			byte[] data = BasicFunction.buildSendData(inhalt, wert, nummer);
 			DatagramPacket p = new DatagramPacket(data, data.length, InetAddress.getByName(ip), port);
 			socket.send(p);
 		} catch (IOException e) {
@@ -83,5 +89,7 @@ public class BasicSensor implements Runnable{
 	public void add(){
 		//TODO implement im einkauf
 	}
+
+
 	
 }

@@ -1,11 +1,18 @@
 package parktikum.zentrale;
 
+import parktikum.functions.BasicFunction;
+import parktikum.functions.Data;
+import parktikum.functions.DataHistory;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 
+/**
+ * Created by sicher on 06.04.2017.
+ */
 public class BasicZentrale {
 
 	public final static int SEND_BYTES = 1024;
@@ -14,7 +21,7 @@ public class BasicZentrale {
 	private DatagramSocket socket;
 	
 	public static void main(String args[]) throws SocketException, IOException{
-		new BasicZentrale(4711).receive();
+		new BasicZentrale(47111).receive();
 	}
 	
 	public BasicZentrale(int port) throws SocketException{
@@ -24,11 +31,17 @@ public class BasicZentrale {
 	
 	public void receive() throws IOException{
 		DatagramPacket packet;
-		System.out.println("Zentrale hört");
+		System.out.println("Zentrale hÃ¶rt");
 		while(true){
 			packet = new DatagramPacket(new byte[SEND_BYTES], SEND_BYTES);
 			socket.receive(packet);
-			System.out.println("" + packet.getAddress() + packet.getPort() + packet.getLength() + packet.getData());
+			byte[] data = packet.getData();
+			Data d = new Data();
+
+			System.out.println("" + packet.getAddress() + "+" + packet.getPort() + "+" + packet.getLength() + "+" + BasicFunction.getSendData(data, d) + "+" + d);// + new String(packet.getData(), 0, packet.getLength()));
+
+			System.out.println();
+
 			//add(packet.getAddress() + ":" + packet.getPort(), new Data());
 		}
 	}

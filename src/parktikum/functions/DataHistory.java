@@ -1,7 +1,10 @@
-package parktikum.zentrale;
+package parktikum.functions;
 
 import java.util.ArrayList;
 
+/**
+ * Created by sicher on 05.04.2017.
+ */
 public class DataHistory{
 
 	private Data max;
