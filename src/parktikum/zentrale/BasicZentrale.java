@@ -19,19 +19,30 @@ public class BasicZentrale {
 	
 	private HashMap<String, DataHistory> speicher;
 	private DatagramSocket socket;
+	private int port;
 	
 	public static void main(String args[]) throws SocketException, IOException{
-		new BasicZentrale(47111).receive();
+		BasicZentrale zentrale = null;
+		try {
+			if (args.length == 1) {
+				zentrale = new BasicZentrale(Integer.parseInt(args[0]));
+			}
+		}catch(NumberFormatException e){}
+		if(zentrale == null){
+			zentrale = new BasicZentrale(47111);
+		}
+		zentrale.receive();
 	}
 	
 	public BasicZentrale(int port) throws SocketException{
 		speicher = new HashMap<>();
 		socket = new DatagramSocket(port);
+		this.port = port;
 	}
 	
 	public void receive() throws IOException{
 		DatagramPacket packet;
-		System.out.println("Zentrale hört auf Port ");
+		System.out.println("Zentrale hört auf Port " + port);
 		while(true){
 			packet = new DatagramPacket(new byte[SEND_BYTES], SEND_BYTES);
 			socket.receive(packet);
