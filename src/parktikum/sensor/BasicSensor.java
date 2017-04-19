@@ -13,6 +13,7 @@ import java.util.Random;
 
 /**
  * Created by sicher on 05.04.2017.
+ *
  */
 public class BasicSensor implements Runnable{
 	public final static int MIN_WAIT = 100;
