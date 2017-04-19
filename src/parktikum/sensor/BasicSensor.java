@@ -15,8 +15,8 @@ import java.util.Random;
  * Created by sicher on 05.04.2017.
  */
 public class BasicSensor implements Runnable{
-	public final static int MIN_WAIT = 10;
-	public final static int MAX_WAIT = 50;
+	public final static int MIN_WAIT = 100;
+	public final static int MAX_WAIT = 5000;
 	public final static int MIN_WERT = 1000;
 	public final static int MAX_WERT = 5000;
 
@@ -33,7 +33,7 @@ public class BasicSensor implements Runnable{
 		if(args.length == 3){
 			new Thread(new BasicSensor(args[0], args[1], Integer.parseInt(args[2]))).start();
 		}else{
-			new Thread(new BasicSensor("Bier", "127.0.0.1", 47111)).start();
+			new Thread(new BasicSensor("Bier", "141.100.42.138", 47111)).start();
 		}
 	}
 	

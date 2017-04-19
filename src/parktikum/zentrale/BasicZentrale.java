@@ -31,7 +31,7 @@ public class BasicZentrale {
 	
 	public void receive() throws IOException{
 		DatagramPacket packet;
-		System.out.println("Zentrale hört");
+		System.out.println("Zentrale hört auf Port ");
 		while(true){
 			packet = new DatagramPacket(new byte[SEND_BYTES], SEND_BYTES);
 			socket.receive(packet);
