@@ -31,7 +31,7 @@ public class BasicZentrale {
 		if(zentrale == null){
 			zentrale = new BasicZentrale(47111);
 		}
-		zentrale.receive();
+		zentrale.receiveSensorData();
 	}
 	
 	public BasicZentrale(int port) throws SocketException{
@@ -40,20 +40,26 @@ public class BasicZentrale {
 		this.port = port;
 	}
 	
-	public void receive() throws IOException{
+	public void receiveSensorData() throws IOException{
 		DatagramPacket packet;
 		System.out.println("Zentrale hört auf Port " + port);
 		while(true){
 			packet = new DatagramPacket(new byte[SEND_BYTES], SEND_BYTES);
 			socket.receive(packet);
-			byte[] data = packet.getData();
-			Data d = new Data();
+			byte[] dataBytes = packet.getData();
+			Data data = new Data();
 
-			System.out.println("" + packet.getAddress() + "+" + packet.getPort() + "+" + packet.getLength() + "+" + BasicFunction.getSendData(data, d) + "+" + d);// + new String(packet.getData(), 0, packet.getLength()));
+			//System.out.println("" + packet.getAddress() + "+" + packet.getPort() + "+" + packet.getLength() + "+" + BasicFunction.getSendData(dataBytes, data) + "+" + data);// + new String(packet.getData(), 0, packet.getLength()));
 
-			System.out.println();
+			if(BasicFunction.getSendData(dataBytes, data) != -1){
+				String keyString = packet.getAddress() + ":" + packet.getPort() + " " + data.inhalt;
 
-			//add(packet.getAddress() + ":" + packet.getPort(), new Data());
+				System.out.println("putting " + data + " into " + keyString);
+				add(keyString, data);
+			}else{
+				System.err.println("Data couldn't be made for " + packet.getData() + " from " + packet.getAddress() + ":" + packet.getPort());
+			}
+
 		}
 	}
 	

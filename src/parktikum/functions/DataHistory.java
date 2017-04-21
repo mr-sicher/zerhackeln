@@ -10,6 +10,7 @@ public class DataHistory{
 	private Data max;
 	private ArrayList<Data> datas;
 	public DataHistory(){
+		max = null;
 		datas = new ArrayList<>();
 	}
 	public void add(Data data){

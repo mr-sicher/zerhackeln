@@ -103,6 +103,7 @@ public abstract class BasicFunction {
             }
         }catch (IndexOutOfBoundsException | IncorrectDataException e){
             System.out.println(e.getMessage());
+            data = null;
             return -1;
         }
 
