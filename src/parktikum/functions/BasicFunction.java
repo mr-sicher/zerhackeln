@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public abstract class BasicFunction {
     public static byte[] buildSendData(String inhalt, int wert, int nummer){
-        ArrayList<Byte> test = new ArrayList<>();
+        ArrayList<Byte> sendBytes = new ArrayList<>();
         int inhaltLength = inhalt.length();
         int wertLength = (int)(Math.log(wert) / Math.log(128)) + 1;
         if(wert == 0) {
@@ -17,7 +17,7 @@ public abstract class BasicFunction {
         if(nummer == 0){
             nummerLength = 1;
         }
-        int dataLength = 1 + inhaltLength + 1 + wertLength + 1 + nummerLength;
+        int dataLength = 1 + inhaltLength + 1 + nummerLength + 1 + wertLength + 1;
         //int length = ("" + dataLength).length()/256 + 1;
         int tmp = dataLength;
         ArrayList<Byte> tmpList =  new ArrayList<>();
@@ -26,14 +26,14 @@ public abstract class BasicFunction {
             tmp /= 128;
         }while(tmp > 0);
         for(int i = tmpList.size() -1 ; i >= 0; i --){
-            test.add(tmpList.get(i));
+            sendBytes.add(tmpList.get(i));
         }
-        test.add((byte) -1);
+        sendBytes.add((byte) -1);
 
         for(int i = 0; i < inhaltLength; i ++){
-            test.add((byte) inhalt.getBytes()[i]);
+            sendBytes.add((byte) inhalt.getBytes()[i]);
         }
-        test.add((byte) -1);
+        sendBytes.add((byte) -1);
 
         tmp = nummer;
         tmpList =  new ArrayList<>();
@@ -42,9 +42,9 @@ public abstract class BasicFunction {
             tmp /= 128;
         }while(tmp > 0);
         for(int i = tmpList.size() -1 ; i >= 0; i --){
-            test.add(tmpList.get(i));
+            sendBytes.add(tmpList.get(i));
         }
-        test.add((byte) -1);
+        sendBytes.add((byte) -1);
 
         tmp = wert;
         tmpList =  new ArrayList<>();
@@ -53,13 +53,14 @@ public abstract class BasicFunction {
             tmp /= 128;
         }while(tmp > 0);
         for(int i = tmpList.size() -1 ; i >= 0; i --){
-            test.add(tmpList.get(i));
+            sendBytes.add(tmpList.get(i));
         }
-        test.add((byte) -1);
+        sendBytes.add((byte) -1);
 
-        //System.out.println(test);
-        return convert(test);
+        //System.out.println(sendBytes);
+        return convert(sendBytes);
     }
+
     private static byte[] convert(ArrayList<Byte> list){
         byte[] ret = new byte[list.size()];
         for(int i = 0; i < list.size(); i ++){
@@ -67,6 +68,7 @@ public abstract class BasicFunction {
         }
         return ret;
     }
+
     public static int getSendData(byte[] bytes, Data data){
         int ret = 0;
         int pointer = 0;
@@ -98,8 +100,8 @@ public abstract class BasicFunction {
                 pointer += 1;
             }
 
-            if(pointer-1 != ret){
-                throw new IncorrectDataException((pointer-1) + "!=" + ret);
+            if(pointer != ret){
+                throw new IncorrectDataException(pointer + "!=" + ret);
             }
         }catch (IndexOutOfBoundsException | IncorrectDataException e){
             System.out.println(e.getMessage());

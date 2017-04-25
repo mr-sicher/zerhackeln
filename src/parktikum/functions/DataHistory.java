@@ -27,4 +27,7 @@ public class DataHistory{
 	public String dump(){
 		return datas.toString();
 	}
+	public ArrayList<Data> getDatas(){
+		return datas;
+	}
 }

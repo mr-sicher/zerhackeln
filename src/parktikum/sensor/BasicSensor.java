@@ -34,7 +34,7 @@ public class BasicSensor implements Runnable{
 		if(args.length == 3){
 			new Thread(new BasicSensor(args[0], args[1], Integer.parseInt(args[2]))).start();
 		}else{
-			new Thread(new BasicSensor("Bier", "141.100.42.138", 47111)).start();
+			new Thread(new BasicSensor("Bier", "localhost", 47111)).start();
 		}
 	}
 	
@@ -54,11 +54,11 @@ public class BasicSensor implements Runnable{
 		// TODO Auto-generated method stub
 		int alterWert = -1;
 		while(true){
-			nummer ++;
 			alterWert = wert;
 			wert -= rand.nextInt(10);
-			if(wert < 0)
+			if(wert < 0) {
 				wert = 0;
+			}
 			if(wert != alterWert)
 				send();
 			try {
@@ -85,6 +85,8 @@ public class BasicSensor implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//successfully sended
+		nummer ++;
 	}
 	
 	public void add(){
