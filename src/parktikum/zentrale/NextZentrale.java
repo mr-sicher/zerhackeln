@@ -22,6 +22,7 @@ public class NextZentrale {
 
 
     public final static int SEND_BYTES = 1024;
+    public final static String HTTP_SENSOR = "/sensor";
 
     private HashMap<String, DataHistory> speicher;
     private DatagramSocket socket;
@@ -121,15 +122,29 @@ public class NextZentrale {
                 System.out.println(read);
             }//*/
             //System.out.println("GET: \"" + get.split(" ")[1] + "\"");
-            String send = "<html><head><base href=\"/\"><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"></head><h1>Cooler Kühlschrank</h1><a href=\"/\">Home</a>";
-            String key = get.split(" ")[1];
-                send += generateHtmlDataHistory(key);
-            send +=  "</html>";
-            out.println("HTTP/1.1 200 Ok");
-            out.println("Content-type: text/html");
-            out.println("Content-length: " + send.length());
-            out.println("");
-            out.println(send);
+            try {
+                String send = "<html><head><base href=\"/\"><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"></head><h1>Cooler Kühlschrank</h1><a href=\"/\">Home</a>";
+                String key = get.split(" ")[1];
+                if(key.contains(HTTP_SENSOR)) {
+                    key = key.substring(HTTP_SENSOR.length());
+                    send += generateHtmlDataHistory(key);
+                }else{
+                    if(key.equals("/"))
+                        send += generateGeneralHtmlSensorData();
+                    else
+                        throw new IllegalArgumentException(key + " not found");
+                }
+                send +=  "</html>";
+                out.println("HTTP/1.1 200 Ok");
+                out.println("Content-type: text/html");
+                out.println("Content-length: " + send.length());
+                out.println("");
+                out.println(send);
+            }catch(IllegalArgumentException e){
+                out.println("HTTP/1.1 451 Unavailable For Legal Reasons");
+                out.println("Content-type: text/html");
+                out.println("Content-length: " + 0);
+            }
             client.close();
             System.out.println("Client close");
         } catch (IOException e) {
@@ -145,7 +160,7 @@ public class NextZentrale {
             Data data = speicher.get(s).getNewest();
             builder.append("<tr>");
             builder.append("<td>");
-            builder.append("<a href=\"" + s + "\">" + data.inhalt + "</a>");
+            builder.append("<a href=\"" + HTTP_SENSOR + s + "\">" + data.inhalt + "</a>");
             builder.append("</td>");
             builder.append("<td>");
             builder.append(data.nummer);
@@ -166,8 +181,7 @@ public class NextZentrale {
     private String generateHtmlDataHistory(String key){
         DataHistory history = speicher.get(key);
         if(history == null) {
-            System.err.println(key + " not found");
-            return generateGeneralHtmlSensorData();
+            throw new IllegalArgumentException(key + " not found");
         }
         StringBuilder builder = new StringBuilder();
         builder.append("<br/>Sensor: <b>" + key + "</b><br>");
