@@ -89,7 +89,7 @@ public class NextZentrale {
             //server.setSoTimeout( 60000 ); // Timeout nach 1 Minute
             server = new ServerSocket(tcpPort);
             while(true) {
-                Socket client = server.accept();
+                final Socket client = server.accept();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -121,30 +121,42 @@ public class NextZentrale {
                 }
                 System.out.println(read);
             }//*/
+            String send;
             //System.out.println("GET: \"" + get.split(" ")[1] + "\"");
-            try {
-                String send = "<html><head><base href=\"/\"><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"></head><h1>Cooler Kühlschrank</h1><a href=\"/\">Home</a>";
-                String key = get.split(" ")[1];
-                if(key.contains(HTTP_SENSOR)) {
-                    key = key.substring(HTTP_SENSOR.length());
-                    send += generateHtmlDataHistory(key);
-                }else{
-                    if(key.equals("/"))
-                        send += generateGeneralHtmlSensorData();
-                    else
-                        throw new IllegalArgumentException(key + " not found");
+            if(!get.contains(".ico")) {
+                try {
+                     send = "<html><head><base href=\"/\"><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"></head><h1>Cooler Kühlschrank</h1><a href=\"/\">Home</a>";
+                    String key = get.split(" ")[1];
+                    if (key.contains(HTTP_SENSOR)) {
+                        key = key.substring(HTTP_SENSOR.length());
+                        send += generateHtmlDataHistory(key);
+                    } else {
+                        if (key.equals("/"))
+                            send += generateGeneralHtmlSensorData();
+                        else
+                            throw new IllegalArgumentException(key + " not found");
+                    }
+                    send += "</html>";
+                    out.println("HTTP/1.1 200 Ok");
+                    out.println("Content-type: text/html");
+                    out.println("Content-length: " + send.length());
+                    out.println("");
+                    out.println(send);
+                } catch (IllegalArgumentException e) {
+                    out.println("HTTP/1.1 451 Unavailable For Legal Reasons");
+                    out.println("Content-type: text/html");
+                    out.println("Content-length: " + 0);
                 }
-                send +=  "</html>";
+            }else{
+                //send favicon.ico
                 out.println("HTTP/1.1 200 Ok");
-                out.println("Content-type: text/html");
-                out.println("Content-length: " + send.length());
+                out.println("Content-type: image/vnd.microsoft.icon");
+                out.println("Content-length: 0");
                 out.println("");
-                out.println(send);
-            }catch(IllegalArgumentException e){
-                out.println("HTTP/1.1 451 Unavailable For Legal Reasons");
-                out.println("Content-type: text/html");
-                out.println("Content-length: " + 0);
-            }
+                out.println("");
+            }//*/
+            out.close();
+            in.close();
             client.close();
             System.out.println("Client close");
         } catch (IOException e) {
