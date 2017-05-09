@@ -3,12 +3,7 @@ package parktikum.sensor;
 import parktikum.functions.BasicFunction;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.net.*;
 import java.util.Random;
 
 /**
@@ -16,25 +11,27 @@ import java.util.Random;
  *
  */
 public class BasicSensor implements Runnable{
-	public final static int MIN_WAIT = 100;
-	public final static int MAX_WAIT = 5000;
+	public final static int MIN_WAIT = 10;
+	public final static int MAX_WAIT = 50;
 	public final static int MIN_WERT = 1000;
 	public final static int MAX_WERT = 5000;
+	public final static int SEND_BYTES = 1024;
 
 	private Random rand;
 	private String inhalt;
 	private int nummer;
-	private int wert;
+	private volatile int wert;
 	private String ip;//zentrale
 	private int port;//zentrale
 	private DatagramSocket socket;
+	private DatagramSocket reciveSocket;
 	
 	public static void main(String args[]) throws NumberFormatException, SocketException, UnknownHostException{
 		
 		if(args.length == 3){
 			new Thread(new BasicSensor(args[0], args[1], Integer.parseInt(args[2]))).start();
 		}else{
-			new Thread(new BasicSensor("Bier", "localhost", 47111)).start();
+			new Thread(new BasicSensor("Schnelles Bier", "localhost", 47111)).start();
 		}
 	}
 	
@@ -47,6 +44,12 @@ public class BasicSensor implements Runnable{
 		this.port = port;
 		socket = new DatagramSocket();
 		send();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				recieveChange();
+			}
+		}).start();
 	}
 	
 	@Override
@@ -55,9 +58,9 @@ public class BasicSensor implements Runnable{
 		int alterWert = -1;
 		while(true){
 			alterWert = wert;
-			wert -= rand.nextInt(10);
+			changeWert(wert - rand.nextInt(10));
 			if(wert < 0) {
-				wert = 0;
+				changeWert(0);
 			}
 			if(wert != alterWert)
 				send();
@@ -69,16 +72,36 @@ public class BasicSensor implements Runnable{
 			}
 		}
 	}
+
+	public synchronized void changeWert(int value) {
+		if(value - wert > 0 && value > 1)
+		System.err.println("Change to " + value);
+		this.wert = value;
+	}
 	
-	public void init() throws IOException{
+	public void recieveChange() {
 		//TODO create Socket
-		System.out.println(inhalt + ": " + ip + ":" + port);
+
+		System.out.println("Sensor hört UDP auf Port " + socket.getLocalPort());
+		DatagramPacket packet;
+		while(true) {
+			packet = new DatagramPacket(new byte[SEND_BYTES], SEND_BYTES);
+			try {
+				socket.receive(packet);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			byte[] dataBytes = packet.getData();
+			int result = (int) dataBytes[0];
+			changeWert(wert + result);
+		}
 	}
 	public void send(){
 		try {
-			String send = inhalt + " " + nummer + " " + wert;
+			int sendWert = wert;
+			String send = inhalt + " " + nummer + " " + sendWert;
 			System.out.println("send " + send);
-			byte[] data = BasicFunction.buildSendData(inhalt, wert, nummer);
+			byte[] data = BasicFunction.buildSendData(inhalt, sendWert, nummer);
 			DatagramPacket p = new DatagramPacket(data, data.length, InetAddress.getByName(ip), port);
 			socket.send(p);
 		} catch (IOException e) {
@@ -88,10 +111,7 @@ public class BasicSensor implements Runnable{
 		//successfully sended
 		nummer ++;
 	}
-	
-	public void add(){
-		//TODO implement im einkauf
-	}
+
 
 
 	
