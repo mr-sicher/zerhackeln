@@ -1,6 +1,8 @@
 package parktikum.laden;
 
 import org.apache.thrift.TException;
+import parktikum.functions.Order;
+import parktikum.functions.Ware;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ public class LadenHandler implements Laden.Iface {
         this.waren = new HashMap<>();
         orders = new HashMap<>();
         for(Ware w : waren){
-            this.waren.put(w.content, w);
+            this.waren.put(w.getContent(), w);
         }
     }
 
@@ -31,7 +33,9 @@ public class LadenHandler implements Laden.Iface {
             return -1;
         Ware ware = waren.get(article);
         double price = ware.getPrice(amount);
-        orders.get(customer).add(new Order(ware, amount));
+        Order order = new Order(ware, amount);
+        orders.get(customer).add(order);
+        System.out.println(customer + " bought " + order.getWare().getContent() + " for " + order.getWare().getPrice(order.getAmount()) + "€. ");
         return price;
     }
 
@@ -48,25 +52,6 @@ public class LadenHandler implements Laden.Iface {
         return waren.get(article).getPrice(amount);
     }
 
-    public class Order{
-        public Ware ware;
-        public int amount;
-        public Order(Ware ware, int amount){
-            this.ware = ware;
-            this.amount = amount;
-        }
-    }
 
-    public class Ware {
-        public int price;
-        public int measurement = 100;
-        public String content;
 
-        public double getPrice(){
-            return price;
-        }
-        public double getPrice(int amount){
-            return price * (1.0*amount) / measurement;
-        }
-    }
 }

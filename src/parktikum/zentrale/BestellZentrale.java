@@ -1,14 +1,20 @@
 package parktikum.zentrale;
 
-import parktikum.functions.AmountException;
-import parktikum.functions.BasicFunction;
-import parktikum.functions.Data;
-import parktikum.functions.DataHistory;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
+import parktikum.functions.*;
+import parktikum.laden.Laden;
 
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -19,14 +25,17 @@ public class BestellZentrale {
 
 
     public final static int SEND_BYTES = 1024;
+    public final static String WHITESPACE = "%20";
     public final static String HTTP_SENSOR = "/sensor";
     public final static String HTTP_BESTELLUNG = "/bestellung";
+    public final static String HTTP_SHOP = "/shop";
 
     private HashMap<String, DataHistory> speicher;
     private DatagramSocket socket;
     private ServerSocket server ;
     private int udpPort;
     private int tcpPort;
+    private ArrayList<LadenInformation> knownShops;
 
     public static void main(String args[]) throws SocketException, IOException {
         BestellZentrale zentrale = null;
@@ -47,6 +56,7 @@ public class BestellZentrale {
         socket = new DatagramSocket(udpPort);
         this.tcpPort = tcpPort;
         this.udpPort = udpPort;
+        knownShops = new ArrayList<>();
     }
 
     public void start() throws IOException{
@@ -132,10 +142,20 @@ public class BestellZentrale {
                     if (key.contains(HTTP_SENSOR)) {
                         key = key.substring(HTTP_SENSOR.length());
                         send += generateHtmlDataHistory(key);
-                    } else if(key.contains(HTTP_BESTELLUNG)){
+                    } else if(key.contains(HTTP_BESTELLUNG)){ //oder via Browser
                         key = key.substring(HTTP_BESTELLUNG.length()+1);
-                        order(key.split("/")[0], Integer.parseInt(key.split("/")[1]));
-                        send = "<html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"1; URL=http://" + host + "\"></head><body></body>";
+                        String[] values = key.split("/");
+                        try {
+                            ordern(values[0].replaceAll(WHITESPACE, " "), Integer.parseInt(values[1]));
+                        }catch(TException e){
+                            e.printStackTrace();
+                        }
+                        send = "<html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"1; URL=http://" + host + "\"></head><body>Successfully ordered</body>";
+                    } else if(key.contains(HTTP_SHOP)){//adding a new shop
+                        key = key.substring(HTTP_SHOP.length() + 1);
+                        String[] info = key.split("/");
+                        knownShops.add(new LadenInformation(info[0], Integer.parseInt(info[1])));
+                        send = "<html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"1; URL=http://" + host + "\"></head><body>Shop successfully added.</body>";
                     } else {
                         if (key.equals("/"))
                             send += generateGeneralHtmlSensorData();
@@ -191,7 +211,7 @@ public class BestellZentrale {
             builder.append(data.wert);
             builder.append("</td>");
             builder.append("<td>");
-            builder.append("<a href=\"" + HTTP_BESTELLUNG + s + "/100" + "\">" + "100 Bestellen" + "</a>");
+            builder.append("<a href=\"" + HTTP_BESTELLUNG + "/" + data.inhalt.replaceAll(" ", WHITESPACE) + "/100" + "\">" + "100 Bestellen" + "</a>");
             builder.append("</td>");
             builder.append("</tr>");
         }
@@ -234,9 +254,58 @@ public class BestellZentrale {
         speicher.get(key).add(data);
     }
 
-    private void order(String sensorname, int amount) {
+    public void ordern(String article, int amount) throws TException {
+        double lowest = -1;
+        double current;
+        TTransport lowestInfo = null;
+        for(LadenInformation info : knownShops){
+            TTransport transport = new TSocket(info.getIp(), info.getPort());
+            transport.open();
+            TProtocol protocol = new TBinaryProtocol(transport);
+            Laden.Client laden = new Laden.Client(protocol);
+            current = laden.getPriceFor(article, amount);
+            if(current != -1){
+                if(lowestInfo == null) {
+                    lowestInfo = transport;
+                } else {
+                    if(current < lowest){
+                        lowestInfo.close();
+                        lowestInfo = transport;
+                    } else {
+                        transport.close();
+                    }
+                }
+            }
+        }
+        if(lowestInfo == null){
+            System.out.println("no article found");
+            throw new CouldNotOrderException("no article found");
+        }
+
+        //looking for a Sensor to put in
+        String sensorname = null;
+        for(String key : speicher.keySet()){
+            DataHistory history = speicher.get(key);
+            if(history.getNewest().inhalt.equals(article)){
+                sensorname = key;
+                break;
+            }
+        }
+        if(sensorname == null){
+            System.out.println("no sensor found");
+            throw new CouldNotOrderException("No sensor found");
+        }
+        TProtocol protocol = new TBinaryProtocol(lowestInfo);
+        Laden.Client orderLaden = new Laden.Client(protocol);
+        double orderdeAmount = orderLaden.add(this.toString(), article, amount);
+        lowestInfo.close();
+        orderSend(sensorname, (int) orderdeAmount);
+    }
+
+    private void orderSend(String sensorname, int amount) {
+        //sending to Sensor the added information by byte
         if(amount > 127) {
-            order(sensorname, amount -127);
+            orderSend(sensorname, amount -127);
             amount = 127;
         }
         String ip, port;
