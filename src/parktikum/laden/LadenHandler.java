@@ -28,7 +28,7 @@ public class LadenHandler implements Laden.Iface {
     @Override
     public double add(String customer, String article, int amount) throws TException {
         if(!orders.containsKey(customer))
-            orders.put(customer, new ArrayList<>());
+            orders.put(customer, new ArrayList<Order>());
         if(!waren.containsKey(article))
             return -1;
         Ware ware = waren.get(article);
