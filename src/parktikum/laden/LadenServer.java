@@ -7,6 +7,9 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import parktikum.functions.Ware;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Created by sicher on 11.05.2017.
  */
@@ -65,7 +68,11 @@ public class LadenServer {
         try {
             TServerTransport serverTransport = new TServerSocket(port);
             TServer server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
-            System.out.println("Starting Laden on " + ":" + port + "...");
+            try {
+                System.out.println("Starting Laden on " + InetAddress.getLocalHost() + ":" + port + "...");
+            }catch(UnknownHostException e){
+                e.printStackTrace();
+            }
             server.serve();
         }catch(TTransportException e){
             e.printStackTrace();

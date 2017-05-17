@@ -25,6 +25,7 @@ public class BestellZentrale {
 
 
     public final static int SEND_BYTES = 1024;
+    public final static int AUTO_ORDER = 100;
     public final static String WHITESPACE = "%20";
     public final static String HTTP_SENSOR = "/sensor";
     public final static String HTTP_BESTELLUNG = "/bestellung";
@@ -37,7 +38,7 @@ public class BestellZentrale {
     private int tcpPort;
     private ArrayList<LadenInformation> knownShops;
 
-    public static void main(String args[]) throws SocketException, IOException {
+    public static void main(String args[]) throws SocketException, IOException, TException {
         BestellZentrale zentrale = null;
         try {
             if (args.length == 2) {
@@ -59,7 +60,7 @@ public class BestellZentrale {
         knownShops = new ArrayList<>();
     }
 
-    public void start() throws IOException{
+    public void start() throws IOException, TException{
         new Thread(new Runnable(){
             @Override
             public void run() {
@@ -69,7 +70,7 @@ public class BestellZentrale {
         receiveSensorData();
     }
 
-    public void receiveSensorData() throws IOException {
+    public void receiveSensorData() throws IOException, TException {
         DatagramPacket packet;
         System.out.println("Zentrale hört UDP auf Port " + udpPort);
         while(true){
@@ -91,6 +92,7 @@ public class BestellZentrale {
 
         }
     }
+
     public void acceptTcpConnection(){
         System.out.println("TCP Server started on Port " + tcpPort);
         try{
@@ -155,6 +157,7 @@ public class BestellZentrale {
                         key = key.substring(HTTP_SHOP.length() + 1);
                         String[] info = key.split("/");
                         knownShops.add(new LadenInformation(info[0], Integer.parseInt(info[1])));
+                        System.out.println("Shop successfully added");
                         send = "<html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"1; URL=http://" + host + "\"></head><body>Shop successfully added.</body>";
                     } else {
                         if (key.equals("/"))
@@ -246,12 +249,19 @@ public class BestellZentrale {
         return builder.toString();
     }
 
-
-    private void add(String key, Data data){
+    private void add(String key, Data data) throws TException{
         if(speicher.get(key) == null){
             speicher.put(key, new DataHistory());
         }
         speicher.get(key).add(data);
+        try {
+            if (data.wert < AUTO_ORDER) {
+                ordern(data.inhalt, AUTO_ORDER);
+            }
+        }catch(TException |CouldNotOrderException e){
+            System.err.println("couldn't order");
+            System.err.println(e.getMessage());
+        }
     }
 
     public void ordern(String article, int amount) throws TException {
@@ -284,11 +294,17 @@ public class BestellZentrale {
 
         //looking for a Sensor to put in
         String sensorname = null;
+        int lowestSensor = -1;
         for(String key : speicher.keySet()){
             DataHistory history = speicher.get(key);
             if(history.getNewest().inhalt.equals(article)){
-                sensorname = key;
-                break;
+                if(sensorname == null) {
+                    sensorname = key;
+                    lowestSensor = history.getNewest().wert;
+                } else if(lowestSensor > history.getNewest().wert){
+                    sensorname = key;
+                    lowestSensor = history.getNewest().wert;
+                }
             }
         }
         if(sensorname == null){
@@ -297,9 +313,9 @@ public class BestellZentrale {
         }
         TProtocol protocol = new TBinaryProtocol(lowestInfo);
         Laden.Client orderLaden = new Laden.Client(protocol);
-        double orderdeAmount = orderLaden.add(this.toString(), article, amount);
+        double price = orderLaden.add(this.toString(), article, amount);
         lowestInfo.close();
-        orderSend(sensorname, (int) orderdeAmount);
+        orderSend(sensorname, amount);
     }
 
     private void orderSend(String sensorname, int amount) {
@@ -314,7 +330,7 @@ public class BestellZentrale {
         port = name.split(":")[1];
         try {
             byte[] data = {(byte)amount};
-            DatagramPacket p = new DatagramPacket(data, data.length,InetAddress.getByName(ip), Integer.parseInt(port));
+            DatagramPacket p = new DatagramPacket(data, data.length,InetAddress.getByName(ip.replaceAll("/", "")), Integer.parseInt(port));
             socket.send(p);
         } catch (SocketException e) {
             e.printStackTrace();
@@ -324,4 +340,5 @@ public class BestellZentrale {
             e.printStackTrace();
         }
     }
+
 }

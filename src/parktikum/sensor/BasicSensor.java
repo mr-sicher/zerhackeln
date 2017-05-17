@@ -14,7 +14,7 @@ public class BasicSensor implements Runnable{
 	public final static int MIN_WAIT = 10;
 	public final static int MAX_WAIT = 50;
 	public final static int MIN_WERT = 1000;
-	public final static int MAX_WERT = 5000;
+	public final static int MAX_WERT = 1001;
 	public final static int SEND_BYTES = 1024;
 
 	private Random rand;
