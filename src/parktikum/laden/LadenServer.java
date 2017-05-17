@@ -48,7 +48,7 @@ public class LadenServer {
     public static void main(String[] args){
         final LadenServer server;
         if(args.length == 0)
-            server = new LadenServer(9090, Ware.FAST_BEER, Ware.BEER, Ware.HAM);
+            server = new LadenServer(9090, Ware.FAST_BEER, new Ware("Bier", 50000), Ware.HAM);
         else
             server = new LadenServer(Integer.parseInt(args[0]),  Ware.FAST_BEER, Ware.BEER, Ware.HAM);
         new Thread(new Runnable() {

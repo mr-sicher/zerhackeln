@@ -336,7 +336,12 @@ public class BestellZentrale {
         transport.open();
         TProtocol protocol = new TBinaryProtocol(transport);
         Laden.Client laden = new Laden.Client(protocol);
-        List<String> result = laden.getOrders(this.toString());
+        List<String> result = null;
+        try {
+             result = laden.getOrders(this.toString());
+        }catch(TException e){
+            System.err.println("Order not found");
+        }
         transport.close();
 
         return result;
