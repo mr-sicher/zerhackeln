@@ -15,7 +15,7 @@ import java.util.Map;
 public class LadenHandler implements Laden.Iface {
 
     private Map<String, Ware> waren;
-    private Map<String, List<Order>> orders;
+    private Map<String, ArrayList<Order>> orders;
 
     public LadenHandler(Ware... waren){
         this.waren = new HashMap<>();
@@ -52,6 +52,15 @@ public class LadenHandler implements Laden.Iface {
         return waren.get(article).getPrice(amount);
     }
 
+    @Override
+    public List<String> getOrders(String costumer) throws TException {
+        ArrayList<String> result = new ArrayList<>();
+        ArrayList<Order> costumersOrder = orders.get(costumer);
+        for(Order order : costumersOrder){
+            result.add(order.toString());
+        }
+        return result;
+    }
 
 
 }

@@ -10,13 +10,13 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://C:/Daten/stud/sechstes/VS/ThriftExample/thrift-jars/libthrift-0.9.1.jar!/" />
-          <root url="jar://C:/Daten/stud/sechstes/VS/ThriftExample/thrift-jars/log4j-1.2.14.jar!/" />
-          <root url="jar://C:/Daten/stud/sechstes/VS/ThriftExample/thrift-jars/slf4j-api-1.5.8.jar!/" />
-          <root url="jar://C:/Daten/stud/sechstes/VS/ThriftExample/thrift-jars/slf4j-log4j12-1.5.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/thrift-jars/libthrift-0.9.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/thrift-jars/log4j-1.2.14.jar!/" />
+          <root url="jar://$MODULE_DIR$/thrift-jars/slf4j-api-1.5.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/thrift-jars/slf4j-log4j12-1.5.8.jar!/" />
         </CLASSES>
         <JAVADOC>
-          <root url="jar://C:/Daten/stud/sechstes/VS/ThriftExample/thrift-jars/libthrift-0.9.1-javadoc.jar!/" />
+          <root url="jar://$MODULE_DIR$/thrift-jars/libthrift-0.9.1-javadoc.jar!/" />
         </JAVADOC>
         <SOURCES />
       </library>

@@ -32,4 +32,13 @@ public class Ware {
     public String getContent(){
         return content;
     }
+
+    @Override
+    public String toString() {
+        return "Ware{" +
+                "price=" + price +
+                ", measurement=" + measurement +
+                ", content='" + content + '\'' +
+                '}';
+    }
 }

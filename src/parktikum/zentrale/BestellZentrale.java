@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -30,6 +31,7 @@ public class BestellZentrale {
     public final static String HTTP_SENSOR = "/sensor";
     public final static String HTTP_BESTELLUNG = "/bestellung";
     public final static String HTTP_SHOP = "/shop";
+    public final static String HTTP_ORDERS = "/orders";
 
     private HashMap<String, DataHistory> speicher;
     private DatagramSocket socket;
@@ -159,6 +161,16 @@ public class BestellZentrale {
                         knownShops.add(new LadenInformation(info[0], Integer.parseInt(info[1])));
                         System.out.println("Shop successfully added");
                         send = "<html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"1; URL=http://" + host + "\"></head><body>Shop successfully added.</body>";
+                    } else if(key.contains(HTTP_ORDERS)) {
+                        key = key.substring(HTTP_ORDERS.length() + 1);
+                        try {
+                            List<String> ordersList = generateOrders(key.split("/")[0], Integer.parseInt(key.split("/")[1]));
+                            for(String s : ordersList){
+                                send += s + "<br />";
+                            }
+                        }catch(TException e){
+                            e.printStackTrace();
+                        }
                     } else {
                         if (key.equals("/"))
                             send += generateGeneralHtmlSensorData();
@@ -316,6 +328,19 @@ public class BestellZentrale {
         double price = orderLaden.add(this.toString(), article, amount);
         lowestInfo.close();
         orderSend(sensorname, amount);
+    }
+
+    private List<String> generateOrders(String ip, int port)throws TException{
+
+        TTransport transport = new TSocket(ip, port);
+        transport.open();
+        TProtocol protocol = new TBinaryProtocol(transport);
+        Laden.Client laden = new Laden.Client(protocol);
+        List<String> result = laden.getOrders(this.toString());
+        transport.close();
+
+        return result;
+
     }
 
     private void orderSend(String sensorname, int amount) {
