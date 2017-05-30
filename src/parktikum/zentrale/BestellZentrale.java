@@ -165,6 +165,7 @@ public class BestellZentrale {
                         key = key.substring(HTTP_ORDERS.length() + 1);
                         try {
                             List<String> ordersList = generateOrders(key.split("/")[0], Integer.parseInt(key.split("/")[1]));
+                            send += "<br />";
                             for(String s : ordersList){
                                 send += s + "<br />";
                             }
@@ -268,7 +269,11 @@ public class BestellZentrale {
         speicher.get(key).add(data);
         try {
             if (data.wert < AUTO_ORDER) {
-                ordern(data.inhalt, AUTO_ORDER);
+                try {
+                    ordern(data.inhalt, AUTO_ORDER);
+                }catch (CouldNotOrderException e){
+                    System.err.println("Couldn't order");
+                }
             }
         }catch(TException |CouldNotOrderException e){
             System.err.println("couldn't order");
@@ -288,9 +293,11 @@ public class BestellZentrale {
             current = laden.getPriceFor(article, amount);
             if(current != -1){
                 if(lowestInfo == null) {
+                    lowest = current;
                     lowestInfo = transport;
                 } else {
                     if(current < lowest){
+                        lowest = current;
                         lowestInfo.close();
                         lowestInfo = transport;
                     } else {

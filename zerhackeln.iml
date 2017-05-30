@@ -10,15 +10,11 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/thrift-jars/libthrift-0.9.1.jar!/" />
-          <root url="jar://$MODULE_DIR$/thrift-jars/log4j-1.2.14.jar!/" />
-          <root url="jar://$MODULE_DIR$/thrift-jars/slf4j-api-1.5.8.jar!/" />
-          <root url="jar://$MODULE_DIR$/thrift-jars/slf4j-log4j12-1.5.8.jar!/" />
+          <root url="file://$MODULE_DIR$/jars" />
         </CLASSES>
-        <JAVADOC>
-          <root url="jar://$MODULE_DIR$/thrift-jars/libthrift-0.9.1-javadoc.jar!/" />
-        </JAVADOC>
+        <JAVADOC />
         <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/jars" recursive="false" />
       </library>
     </orderEntry>
   </component>

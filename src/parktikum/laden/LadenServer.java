@@ -9,12 +9,16 @@ import parktikum.functions.Ware;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 /**
  * Created by sicher on 11.05.2017.
  */
 public class LadenServer {
 
+
+    public final static int MAX_PRiCE = 10000;
+    public final static int MIN_PRICE = 10;
     /*public static void main(String[] args){
         LadenHandler handler;
         Laden.Processor processor;
@@ -47,8 +51,11 @@ public class LadenServer {
 
     public static void main(String[] args){
         final LadenServer server;
+        Random rand = new Random();
         if(args.length == 0)
-            server = new LadenServer(9090, Ware.FAST_BEER, new Ware("Bier", 50000), Ware.HAM);
+            server = new LadenServer(9091, new Ware("Schnelles Bier", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE),
+                    new Ware("Bier", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE),
+                    new Ware("Wurst", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE));
         else
             server = new LadenServer(Integer.parseInt(args[0]),  Ware.FAST_BEER, Ware.BEER, Ware.HAM);
         new Thread(new Runnable() {
@@ -64,6 +71,9 @@ public class LadenServer {
     private LadenHandler handler;
     private Laden.Processor processor;
     public LadenServer(int port, Ware... waren){
+        for(Ware w : waren){
+            System.out.println(w);
+        }
         this.port = port;
         handler = new LadenHandler(waren);
         processor = new Laden.Processor(handler);

@@ -18,7 +18,7 @@ public class Data {
 	    this(null, 0, 0);
     }
 
-    public String toString(){
+ 	public String toString(){
 	    return inhalt + " " + nummer + " " + wert;
 
     }

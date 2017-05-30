@@ -41,12 +41,14 @@ public class LadenHandler implements Laden.Iface {
 
     @Override
     public double getPrice(String article) throws TException {
+        System.out.println("somebody asked for " + article);
         if(!waren.containsKey(article))
             return -1;
         return waren.get(article).getPrice();
     }
     @Override
     public double getPriceFor(String article, int amount) throws TException {
+        System.out.println("somebody asked for " + article + " " + amount);
         if(!waren.containsKey(article))
             return -1;
         return waren.get(article).getPrice(amount);
