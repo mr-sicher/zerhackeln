@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
  * Created by sicher on 30.05.2017.
  */
 public abstract class MyMqttHandler {
+
     public final static String AGREE = "agree";
     public void subscribe(MqttClient client, String topic){
         try {
@@ -18,7 +19,7 @@ public abstract class MyMqttHandler {
     }
     public void publish(MqttClient client, String topic, String message){
         try{
-            System.out.println("Publish " + message);
+            System.out.println("Publish: " + message);
             MqttMessage mqttMessage = new MqttMessage(message.getBytes());
             mqttMessage.setQos(2);
             client.publish(topic, mqttMessage);
