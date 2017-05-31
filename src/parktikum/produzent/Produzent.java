@@ -15,13 +15,17 @@ public class Produzent extends MyMqttHandler {
     private Ware ware;
 
     public static void main(String args[]){
-        final Produzent p = new Produzent(Ware.FAST_BEER, "localhost", 1883);
+        final Produzent p;
+        if(args.length == 1)
+            p = new Produzent(Ware.BEER, args[0], 1883);
+        else
+            p = new Produzent(Ware.BEER, "localhost", 1883);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while(true){
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
