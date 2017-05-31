@@ -39,7 +39,7 @@ public class Produzent extends MyMqttHandler {
 
     public Produzent(Ware ware, String ip, int port){
         this.ware = ware;
-        System.out.println("Starte MQTT for" + ip + ":" + port);
+        System.out.println("Starte MQTT for " + ip + ":" + port);
         mqttClient = makeMqttClient(ip, port);
         subscribe(mqttClient, "Bestellung");
     }
