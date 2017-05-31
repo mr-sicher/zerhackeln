@@ -10,20 +10,25 @@ public class Ware {
     public static final Ware COKE = new Ware("Cola", 99, 330);
     public static final Ware BUTTER = new Ware("Butter", 100);
 
+
+
     private int price;
+    private final int firstPrice;
     private int measurement = 100;
     private String content;
     public Ware(String content, int price){
         this.content = content;
         this.price = price;
+        this.firstPrice = price;
     }
     public Ware(String content, int price, int measurement){
         this.content = content;
         this.price = price;
         this.measurement = measurement;
+        this.firstPrice = price;
     }
 
-    public double getPrice(){
+    public int getPrice(){
         return price;
     }
     public double getPrice(int amount){
@@ -40,5 +45,17 @@ public class Ware {
                 ", measurement=" + measurement +
                 ", content='" + content + '\'' +
                 '}';
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public int getMeasurement() {
+        return measurement;
+    }
+
+    public int getFirstPrice() {
+        return firstPrice;
     }
 }

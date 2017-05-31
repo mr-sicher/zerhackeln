@@ -53,11 +53,11 @@ public class LadenServer {
         final LadenServer server;
         Random rand = new Random();
         if(args.length == 0)
-            server = new LadenServer(9091, new Ware("Schnelles Bier", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE),
+            server = new LadenServer("localhost", 1883,9091, new Ware("Schnelles Bier", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE),
                     new Ware("Bier", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE),
                     new Ware("Wurst", rand.nextInt(MAX_PRiCE-MIN_PRICE) + MIN_PRICE));
         else
-            server = new LadenServer(Integer.parseInt(args[0]),  Ware.FAST_BEER, Ware.BEER, Ware.HAM);
+            server = new LadenServer(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]),  Ware.FAST_BEER, Ware.BEER, Ware.HAM);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -70,12 +70,12 @@ public class LadenServer {
     private int port;
     private LadenHandler handler;
     private Laden.Processor processor;
-    public LadenServer(int port, Ware... waren){
+    public LadenServer(String brokerIp, int brokerPort, int port, Ware... waren){
         for(Ware w : waren){
             System.out.println(w);
         }
         this.port = port;
-        handler = new LadenHandler(waren);
+        handler = new LadenHandler(brokerIp, brokerPort, waren);
         processor = new Laden.Processor(handler);
     }
     public void start(){
