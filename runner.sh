@@ -1,3 +1,3 @@
-mv thrift-jars src
+mv jars src
 cd src
-javac -cp ./thrift-jars/\*\:gen-java: */*/*.java
+javac -cp ./jars/\*\:gen-java: */*/*.java
